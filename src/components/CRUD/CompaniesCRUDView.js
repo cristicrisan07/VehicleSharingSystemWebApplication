@@ -26,20 +26,18 @@ export default function CompaniesCRUDView (props) {
 
     const initializeForm = () => {
 
-        console.log(companies);
-
         let company = companies.find(company => company.name===selectedNameFromDropdown);
         setSelectedCompany(company);
 
         setNewName(company.name)
-        setNewEmail(company.email);
+        setNewEmail(company.emailAddress);
         setNewPhoneNumber(company.phoneNumber);
         setErrorMessageForLabel("");
 
     }
 
     const changesOccurredInFormData = () =>{
-        return  newEmail !== selectedCompany.email || newName !== selectedCompany.name || newPhoneNumber !== selectedCompany.phoneNumber;
+        return  newEmail !== selectedCompany.emailAddress || newName !== selectedCompany.name || newPhoneNumber !== selectedCompany.phoneNumber;
     }
 
     const handleSubmit = async (e) => {
@@ -54,7 +52,7 @@ export default function CompaniesCRUDView (props) {
                     phoneNumber: newPhoneNumber
                 }
                 await fetch(STRINGS.UPDATE_COMPANY_URL, {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
                         "Accept": "application/json",
@@ -65,10 +63,9 @@ export default function CompaniesCRUDView (props) {
                     return res.text();
                 }).then(function (res) {
                     setErrorMessageForLabel(res);
-                        if(!res.contains("ERROR")){
+                        if(!res.includes("ERROR")){
                             setCompanies(companies.filter(company=>company.name!==selectedCompany.name));
                             setCompanies([...companies,d])
-                            props.handleCompaniesFunction(companies)
                         }
                 })
             } else {
@@ -93,9 +90,11 @@ export default function CompaniesCRUDView (props) {
                 return res.text();
             }).then(function (res) {
             setErrorMessageForLabel(res);
-            setCompanies(companies.filter(company=>company.name!==selectedCompany.name));
-            props.handleCompaniesFunction(companies)
-            setSelectedNameFromDropdown("");
+            if (!res.includes("ERROR")) {
+                setCompanies(companies.filter(company => company.name !== selectedCompany.name));
+                props.companyDeletedFunction(selectedCompany);
+                setSelectedNameFromDropdown("");
+            }
             }
         )
             .catch(error => {
@@ -110,9 +109,12 @@ export default function CompaniesCRUDView (props) {
         },[selectedNameFromDropdown])
 
     const companyHasBeenAdded = (company) =>{
-        setCompanies([...companies,company])
-        props.handleCompaniesFunction(companies)
+        props.companyAddedFunction(company)
     }
+    useEffect(()=>{
+        setCompanies(props.companies);
+    },[props.companies])
+
     return (
         <>
             {   companies !== undefined && companies.length > 0 &&
@@ -121,14 +123,14 @@ export default function CompaniesCRUDView (props) {
             <br/>
             {selectedNameFromDropdown!==""&&
                 <Form>
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalName">
+                    <Form.Group className="mb-3" controlId="formCompanyName">
                         <Col mb={2}>
-                            <Form.Control type="name" placeholder="Name" value={newName}
+                            <Form.Control type="name" placeholder="Name" value={newName} disabled={true}
                                           onChange={(e) => setNewName(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalEmail">
+                    <Form.Group className="mb-3" controlId="formCompanyEmail">
                         <Col mb={2}>
                             <Form.Control type="email" placeholder="Email" value={newEmail}
                                           onChange={(e) => setNewEmail(e.target.value)}/>
@@ -137,7 +139,7 @@ export default function CompaniesCRUDView (props) {
 
 
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalPhoneNumber">
+                    <Form.Group className="mb-3" controlId="formCompanyPhoneNumber">
                         <Col mb={2}>
                             <Form.Control type="phone-number" placeholder="Phone number" value={newPhoneNumber}
                                           onChange={(e) => setNewPhoneNumber(e.target.value)}/>
@@ -146,7 +148,7 @@ export default function CompaniesCRUDView (props) {
                     {
                         errorMessageForLabel !== "" &&
                         <>
-                            <Form.Group as={Row} className="mb-3" controlId="formHorizontalLabel">
+                            <Form.Group className="mb-3" controlId="formCompanyLabel">
 
                                 <Col mb={2}>
                                     <Form.Label className="HomepageLabel">{errorMessageForLabel}</Form.Label>

@@ -1,32 +1,25 @@
-import React, {useEffect, useState} from "react";
-import {Button, Col, Container, Form, FormGroup, InputGroup, Modal, Row} from "react-bootstrap";
+import React, {useState} from "react";
+import {Button,  Form, FormGroup, InputGroup, Modal, Row} from "react-bootstrap";
 import validateCompanyData from "../Validator";
 import {getLocalItem, LocalStorageKeys, STRINGS} from "../../services/Utils";
 export function OpenAddNewCompanyFormButton(props) {
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        seterrorMessageForLabel("");
+        setShow(false);
+    }
     const handleShow = () => {setShow(true)}
-    const [name,setName] = useState("")
-    const [email,setEmail] = useState("")
-    const [phoneNumber,setPhoneNumber] = useState("")
     const [errorMessageForLabel,seterrorMessageForLabel]=useState("");
 
-    const setInfo = () =>{
-        setName(document.getElementById("formHorizontalName").value)
-        setEmail(document.getElementById("formHorizontalEmail").value)
-        setPhoneNumber(document.getElementById("formHorizontalPhoneNumber").value)
-    }
     const handleSubmit = async (e) => {
         e.preventDefault()
-        setInfo()
-        let status=validateCompanyData(name,email,phoneNumber);
+        let status=validateCompanyData(document.getElementById("formNewCompanyName").value,document.getElementById("formNewCompanyEmail").value,document.getElementById("formNewCompanyPhoneNumber").value);
         if (status===STRINGS.STATUS_VALID) {
             let d = {
-                name: name,
-                emailAddress: email,
-                phoneNumber: phoneNumber
+                name: document.getElementById("formNewCompanyName").value,
+                emailAddress: document.getElementById("formNewCompanyEmail").value,
+                phoneNumber: document.getElementById("formNewCompanyPhoneNumber").value
             }
-            console.log(d);
             await fetch(STRINGS.INSERT_COMPANY_URL, {
                 method: 'POST',
                 headers: {
@@ -65,22 +58,22 @@ export function OpenAddNewCompanyFormButton(props) {
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <FormGroup className="mb-3" controlId="formHorizontalName">
+                        <FormGroup className="mb-3" controlId="formNewCompanyName">
                                 <Form.Control type="name" placeholder="Name"/>
                         </FormGroup>
 
-                        <FormGroup  className="mb-3" controlId="formHorizontalEmail">
+                        <FormGroup  className="mb-3" controlId="formNewCompanyEmail">
                                 <Form.Control type="email" placeholder="Email"/>
                         </FormGroup>
 
-                        <FormGroup  className="mb-3" controlId="formHorizontalPhoneNumber">
+                        <FormGroup  className="mb-3" controlId="formNewCompanyPhoneNumber">
                                 <Form.Control type="phoneNumber" placeholder="Phone number"/>
                         </FormGroup>
 
                         {
                             errorMessageForLabel!==""&&
                             <>
-                                <FormGroup className="mb-3" controlId="formHorizontalLabel">
+                                <FormGroup className="mb-3" controlId="formNewCompanyLabel">
                                         <Form.Label>{errorMessageForLabel}</Form.Label>
                                 </FormGroup>
                             </>

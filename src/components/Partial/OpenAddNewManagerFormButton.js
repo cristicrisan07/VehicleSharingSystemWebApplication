@@ -6,36 +6,35 @@ import {createRentalCompanyManagerDTO} from "../../services/UserService";
 import SingleSelect from "./SingleSelect";
 export function OpenAddNewManagerFormButton(props) {
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const [companies,setCompanies] = useState(props.companies);
+    const handleClose = () => {
+        seterrorMessageForLabel("");
+        setShow(false);
+    }
     const handleShow = () => setShow(true)
-    const [username,setUsername] = useState("")
-    const [email,setEmail] = useState("")
-    const [phoneNumber,setPhoneNumber] = useState("")
-    const [password,setPassword] = useState("")
-    const [firstName,setFirstName] = useState("")
-    const [lastName,setLastName] = useState("")
-
     const [selectedCompanyNameFromDropdown,setSelectedCompanyNameFromDropdown] = useState("");
-
     const [errorMessageForLabel,seterrorMessageForLabel]=useState("");
 
-
-    const setInfo = () =>{
-        setUsername(document.getElementById("formHorizontalUsername").value)
-        setEmail(document.getElementById("formHorizontalEmail").value)
-        setPhoneNumber(document.getElementById("formHorizontalPhoneNumber").value)
-        setPassword(document.getElementById("formHorizontalPassword").value)
-        setFirstName(document.getElementById("formHorizontalFirstName").value)
-        setLastName(document.getElementById("formHorizontalLastName").value)
-    }
     const handleSubmit = async (e) => {
         e.preventDefault()
-        setInfo()
         if(selectedCompanyNameFromDropdown!=="") {
-            let status = validateAccountData(username, password, phoneNumber, email, firstName, lastName);
+            let status = validateAccountData(document.getElementById("formNewManagerUsername").value,
+                document.getElementById("formNewManagerPassword").value,
+                document.getElementById("formNewManagerPhoneNumber").value,
+                document.getElementById("formNewManagerEmailAddress").value,
+                document.getElementById("formNewManagerFirstName").value,
+                document.getElementById("formNewManagerLastName").value
+                ,true);
             if (status === STRINGS.STATUS_VALID) {
-                let manager = createRentalCompanyManagerDTO(username, password, phoneNumber, email, UserRoles.MANAGER, firstName, lastName,selectedCompanyNameFromDropdown)
-                await fetch(STRINGS.INSERT_COMPANY_URL, {
+                let manager = createRentalCompanyManagerDTO(document.getElementById("formNewManagerUsername").value,
+                    document.getElementById("formNewManagerPassword").value,
+                    document.getElementById("formNewManagerPhoneNumber").value,
+                    document.getElementById("formNewManagerEmailAddress").value,
+                    UserRoles.MANAGER,
+                    document.getElementById("formNewManagerFirstName").value,
+                    document.getElementById("formNewManagerLastName").value,
+                    selectedCompanyNameFromDropdown)
+                await fetch(STRINGS.INSERT_MANAGER_URL, {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
@@ -46,12 +45,13 @@ export function OpenAddNewManagerFormButton(props) {
                 }).then(function (res) {
                     return res.text();
                 }).then(function (res) {
-                    if(res!=="SUCCESS"){
-                        seterrorMessageForLabel(res);
+                    if(!res.includes("ERROR")){
+                        props.handleManagersFunction(manager)
+                        handleClose();
                     }
                     else{
-                        props.handleManagersFunction(manager)
-                        handleClose();}
+                        seterrorMessageForLabel(res);
+                        }
                 })
             } else {
                 seterrorMessageForLabel(status);
@@ -60,6 +60,9 @@ export function OpenAddNewManagerFormButton(props) {
             seterrorMessageForLabel(STRINGS.NO_COMPANY_CHOSEN);
         }
     }
+    useEffect(()=>{
+        setCompanies(props.companies)
+    },[props.companies])
 
     return (
         <>
@@ -75,27 +78,56 @@ export function OpenAddNewManagerFormButton(props) {
                     <Modal.Title>Introduce new manager information</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {   props.companies !== undefined && props.companies.length > 0 &&
-                        <SingleSelect parentFunction={setSelectedCompanyNameFromDropdown} inputStrings={props.companies.map(el => el.name)}/>
+                    {   companies !== undefined && companies.length > 0 &&
+                        <>
+                            <FormGroup className="mb-3" controlId="formCompanyLabel">
+                                <Form.Label>Company:</Form.Label>
+                            </FormGroup>
+                        <SingleSelect parentFunction={setSelectedCompanyNameFromDropdown} inputStrings={companies.map(el => el.name)}/>
+                        </>
                     }
                     <br/>
                     <Form>
-                        <FormGroup className="mb-3" controlId="formHorizontalUsername">
-                            <Form.Control type="username" placeholder="Username"/>
-                        </FormGroup>
+                        <Form.Group className="mb-3" controlId="formNewManagerUsername">
+                            <Col mb={2}>
+                                <Form.Control type="name" placeholder="Username" />
+                            </Col>
+                        </Form.Group>
 
-                        <FormGroup  className="mb-3" controlId="formHorizontalEmail">
-                            <Form.Control type="email" placeholder="Email"/>
-                        </FormGroup>
+                        <Form.Group className="mb-3" controlId="formNewManagerPassword">
+                            <Col mb={2}>
+                                <Form.Control type="password" placeholder="Password" />
+                            </Col>
+                        </Form.Group>
 
-                        <FormGroup  className="mb-3" controlId="formHorizontalPhoneNumber">
-                            <Form.Control type="phoneNumber" placeholder="Phone number"/>
-                        </FormGroup>
+                        <Form.Group className="mb-3" controlId="formNewManagerEmailAddress">
+                            <Col mb={2}>
+                                <Form.Control type="email" placeholder="Email" />
+                            </Col>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formNewManagerPhoneNumber">
+                            <Col mb={2}>
+                                <Form.Control type="phone-number" placeholder="Phone number"/>
+                            </Col>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formNewManagerFirstName">
+                            <Col mb={2}>
+                                <Form.Control type="name" placeholder="First name" />
+                            </Col>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formNewManagerLastName">
+                            <Col mb={2}>
+                                <Form.Control type="name" placeholder="Last name" />
+                            </Col>
+                        </Form.Group>
 
                         {
                             errorMessageForLabel!==""&&
                             <>
-                                <FormGroup className="mb-3" controlId="formHorizontalLabel">
+                                <FormGroup className="mb-3" controlId="formNewManagerLabel">
                                     <Form.Label>{errorMessageForLabel}</Form.Label>
                                 </FormGroup>
                             </>

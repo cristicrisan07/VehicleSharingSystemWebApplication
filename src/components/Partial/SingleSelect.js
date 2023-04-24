@@ -7,7 +7,7 @@ const animatedComponents = makeAnimated();
 
 export default function SingleSelect(props) {
 
-    const [selectedOption, setSelectedOption] = useState("");
+    const [selectedOption, setSelectedOption] = useState(null);
     const [availableOptions,setAvailableOptions] = useState([]);
 
     const handleChange = (opt) => {
@@ -15,7 +15,7 @@ export default function SingleSelect(props) {
     };
 
     useEffect(()=>{
-        if(selectedOption!=="") {
+        if(selectedOption!==null) {
             props.parentFunction(selectedOption.value)
         }
     },[selectedOption])
@@ -31,6 +31,7 @@ export default function SingleSelect(props) {
     }
 
     useEffect( () =>{
+        setSelectedOption(null);
         setAvailableOptions([]);
         createOptionsFromStrings();
     },[props.inputStrings]);
@@ -45,6 +46,7 @@ export default function SingleSelect(props) {
                 components={animatedComponents}
                 options={availableOptions}
                 onChange={handleChange}
+                isSearchable={true}
             />
 
         </div>

@@ -20,6 +20,7 @@ export const AdminHomepage = () => {
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
+
                         if (data.name === "") return false;
                         else {
                             return Promise.reject("Some weird error.");
@@ -35,6 +36,12 @@ export const AdminHomepage = () => {
         }
     }
 
+    const newCompany = (company) =>{
+        setCompanies([...companies,company])
+    }
+    const deleteCompany = (companyToDelete) =>{
+        setCompanies(companies.filter(company=>company.name!==companyToDelete.name));
+    }
     //don't move up
     //"Cannot invoke getCompanies before initialization" thrown.
     useEffect(getCompanies,[]);
@@ -53,10 +60,10 @@ export const AdminHomepage = () => {
                 className="mb-3"
             >
                 <Tab eventKey="companies" title="Companies">
-                    <CompaniesCRUDView companies={companies} handleCompaniesFunction={setCompanies}/>
+                    <CompaniesCRUDView companies={companies} companyDeletedFunction = {deleteCompany} companyAddedFunction={newCompany}/>
                 </Tab>
                 <Tab eventKey="managers" title="Managers">
-                    <ManagersCRUDView companies={companies} handleCompaniesFunction={setCompanies}/>
+                    <ManagersCRUDView companies={companies}/>
                 </Tab>
 
             </Tabs>

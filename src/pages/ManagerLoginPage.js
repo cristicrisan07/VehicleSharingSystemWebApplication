@@ -1,8 +1,19 @@
 import "./style/LoginPage.css";
 import {doLogin} from "../services/UserService"
+import {useNavigate} from "react-router-dom";
 
-export const LoginPage = () => {
+export const ManagerLoginPage = () => {
+    const navigate = useNavigate()
 
+    const onLogin = (e) =>{
+        doLogin(e, document.getElementById("usernameInput").value, document.getElementById("passwordInput").value, "manager")
+            .then(_ =>{
+                navigate("/")
+            }).catch(error => {
+            console.error('There was an error!: ', error);
+        })
+
+    }
     return (
         <div id="main-wrapper" className="container">
             <div className="row justify-content-center">
@@ -35,7 +46,7 @@ export const LoginPage = () => {
                                     <button
                                         type="button"
                                         className="btn btn-primary btn-theme"
-                                        onClick={(e) =>doLogin(e,document.getElementById("usernameInput").value,document.getElementById("passwordInput").value)}
+                                        onClick={(e) =>onLogin(e)}
                                     >
                                         Login
                                     </button>

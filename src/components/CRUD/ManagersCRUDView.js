@@ -6,8 +6,9 @@ import {getLocalItem, LocalStorageKeys, STRINGS, UserRoles} from "../../services
 import {OpenAddNewManagerFormButton} from "../Partial/OpenAddNewManagerFormButton";
 import {createRentalCompanyManagerDTO} from "../../services/UserService";
 
-export default function ManagersCRUDView () {
+export default function ManagersCRUDView (props) {
 
+    const [companies,setCompanies] = useState(props.companies);
     const [managers,setManagers]=useState([]);
     const [selectedNameFromDropdown,setSelectedNameFromDropdown] = useState("");
 
@@ -32,36 +33,36 @@ export default function ManagersCRUDView () {
     const [errorMessageForLabel,setErrorMessageForLabel]=useState("");
 
     const initializeForm = () => {
-        let manager = managers.find(manager => manager.username===selectedNameFromDropdown);
+        let manager = managers.find(manager => manager.userDTO.account.username===selectedNameFromDropdown);
         setSelectedManager(manager);
 
-        setNewUsername(manager.username)
-        setNewEmailAddress(manager.emailAddress);
-        setNewPhoneNumber(manager.phoneNumber);
-        setNewFirstName(manager.firstName);
-        setNewLastName(manager.lastName);
+        setNewUsername(manager.userDTO.account.username)
+        setNewEmailAddress(manager.userDTO.account.emailAddress);
+        setNewPhoneNumber(manager.userDTO.account.phoneNumber);
+        setNewFirstName(manager.userDTO.firstName);
+        setNewLastName(manager.userDTO.lastName);
         setErrorMessageForLabel("");
 
     }
 
     const changesOccurredInFormData = () =>{
-        return  newEmailAddress !== selectedManager.emailAddress ||
-            newUsername !== selectedManager.username ||
-            newPassword !== selectedManager.password ||
-            newPhoneNumber !== selectedManager.phoneNumber ||
-            newFirstName !== selectedManager.firstName ||
-            newLastName !== selectedManager.lastName;
+        return  newEmailAddress !== selectedManager.userDTO.account.emailAddress ||
+            newUsername !== selectedManager.userDTO.account.username ||
+            newPassword !== selectedManager.userDTO.account.password ||
+            newPhoneNumber !== selectedManager.userDTO.account.phoneNumber ||
+            newFirstName !== selectedManager.userDTO.firstName ||
+            newLastName !== selectedManager.userDTO.lastName;
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         let changesOccurredStatus = changesOccurredInFormData();
         if(changesOccurredStatus===true) {
-            let status = validateAccountData(newUsername,newPassword,newPhoneNumber,newEmailAddress,newFirstName,newLastName)
+            let status = validateAccountData(newUsername,newPassword,newPhoneNumber,newEmailAddress,newFirstName,newLastName,false)
             if (status === STRINGS.STATUS_VALID) {
                let manager = createRentalCompanyManagerDTO(newUsername,newPassword,newPhoneNumber,newEmailAddress,UserRoles.MANAGER,newFirstName,newLastName,"")
-                await fetch(STRINGS.UPDATE_COMPANY_URL, {
-                    method: 'PUT',
+                await fetch(STRINGS.UPDATE_MANAGER_URL, {
+                    method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
                         "Accept": "application/json",
@@ -84,7 +85,7 @@ export default function ManagersCRUDView () {
     }
 
     const handleDelete = () =>{
-        fetch(STRINGS.DELETE_COMPANY_URL+selectedManager.username,{
+        fetch(STRINGS.DELETE_MANAGER_URL+selectedManager.userDTO.account.username,{
             method: 'DELETE',
             headers: {
                 "Content-Type": "application/json",
@@ -96,7 +97,7 @@ export default function ManagersCRUDView () {
                 return res.text();
             }).then(function (res) {
                 setErrorMessageForLabel(res);
-                setManagers(managers.filter(manager=>manager.name!==selectedManager.name));
+                setManagers(managers.filter(manager=>manager.userDTO.account.username!==selectedManager.userDTO.account.username));
                 setSelectedNameFromDropdown("");
             }
         )
@@ -107,7 +108,7 @@ export default function ManagersCRUDView () {
 
     const getManagers = () =>{
         if(managers.length===0){
-            fetch(STRINGS.GET_ALL_COMPANIES_URL,{
+            fetch(STRINGS.GET_ALL_MANAGERS_URL,{
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -143,53 +144,56 @@ export default function ManagersCRUDView () {
         }
     },[selectedNameFromDropdown])
 
+    useEffect(()=>{
+        setCompanies(props.companies);
+    },[props.companies])
     const managerHasBeenAdded = (manager) =>{
         setManagers([...managers,manager])
     }
     return (
         <>
             {   managers.length > 0 &&
-                <SingleSelect parentFunction={setSelectedNameFromDropdown} inputStrings={managers.map(el => el.name)}/>
+                <SingleSelect parentFunction={setSelectedNameFromDropdown} inputStrings={managers.map(el => el.userDTO.account.username)}/>
             }
             <br/>
             {selectedNameFromDropdown!==""&&
                 <Form>
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalUsername">
+                    <Form.Group className="mb-3" controlId="formManagerUsername">
                         <Col mb={2}>
-                            <Form.Control type="name" placeholder="Username" value={newUsername}
+                            <Form.Control type="name" placeholder="Username" value={newUsername} disabled={true}
                                           onChange={(e) => setNewUsername(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formPasswordName">
+                    <Form.Group className="mb-3" controlId="formManagerPassword">
                         <Col mb={2}>
                             <Form.Control type="password" placeholder="New Password" value={newPassword}
                                           onChange={(e) => setNewPassword(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalEmailAddress">
+                    <Form.Group className="mb-3" controlId="formManagerEmailAddress">
                         <Col mb={2}>
                             <Form.Control type="email" placeholder="Email" value={newEmailAddress}
                                           onChange={(e) => setNewEmailAddress(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalPhoneNumber">
+                    <Form.Group className="mb-3" controlId="formManagerPhoneNumber">
                         <Col mb={2}>
                             <Form.Control type="phone-number" placeholder="Phone number" value={newPhoneNumber}
                                           onChange={(e) => setNewPhoneNumber(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalFirstName">
+                    <Form.Group className="mb-3" controlId="formManagerFirstName">
                         <Col mb={2}>
                             <Form.Control type="name" placeholder="First name" value={newFirstName}
                                           onChange={(e) => setNewFirstName(e.target.value)}/>
                         </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalLastName">
+                    <Form.Group className="mb-3" controlId="formManagerLastName">
                         <Col mb={2}>
                             <Form.Control type="name" placeholder="Last name" value={newLastName}
                                           onChange={(e) => setNewLastName(e.target.value)}/>
@@ -198,7 +202,7 @@ export default function ManagersCRUDView () {
                     {
                         errorMessageForLabel !== "" &&
                         <>
-                            <Form.Group as={Row} className="mb-3" controlId="formHorizontalLabel">
+                            <Form.Group className="mb-3" controlId="formManagerLabel">
 
                                 <Col mb={2}>
                                     <Form.Label className="HomepageLabel">{errorMessageForLabel}</Form.Label>
@@ -217,7 +221,7 @@ export default function ManagersCRUDView () {
                 </Form>
             }
             <br/>
-            <OpenAddNewManagerFormButton handleManagersFunction={managerHasBeenAdded}/>
+            <OpenAddNewManagerFormButton companies={companies} handleManagersFunction={managerHasBeenAdded}/>
         </>
 
     );

@@ -4,11 +4,9 @@ import {
     setLocalItem,
     UserRoles, STRINGS,
 } from "./Utils";
-import { Link, useNavigate } from "react-router-dom";
-
 
 export const doLogin = async(e,username, password,type) => {
-    const loginURL = type === "admin" ? STRINGS.ADMIN_LOGIN_URL : "";
+    const loginURL = type === "administrator" ? STRINGS.ADMIN_LOGIN_URL : STRINGS.MANAGER_LOGIN_URL;
     let d = {
         username: username,
         password: password,
@@ -24,11 +22,15 @@ export const doLogin = async(e,username, password,type) => {
         },
         body: JSON.stringify(d)
     }).then(function (res) {
-        return res.text()
+        if(res.status === 403){
+            return Promise.reject("Wrong credentials");
+        }
+        return res.text();
     }).then(function(token){
+        let role = type === "administrator" ? UserRoles.ADMINISTRATOR : UserRoles.MANAGER
         let user = {
             username: username,
-            role: UserRoles.ADMINISTRATOR,
+            role: role,
             token:token
         };
         setLocalItem(LocalStorageKeys.USER, user)
@@ -45,6 +47,29 @@ export function createRentalCompanyManagerDTO(username, password, phoneNumber, e
     return{
         userDTO:createUserDTO(username, password, phoneNumber, email, accountType, firstName,lastName),
         companyName:companyName
+    }
+}
+export function createRentalPriceDTO(value,currency,timeunit){
+    return{
+        value:value,
+        currency:currency,
+        timeunit:timeunit
+    }
+}
+export function createVehicleDTO(VIN, manufacturer, model, range, year, hp, torque, mam, nb_seats,location, price,companyName){
+    return{
+        vin:VIN,
+        manufacturer:manufacturer,
+        model:model,
+        rangeLeftInKm:range,
+        yearOfManufacture:year,
+        horsePower:hp,
+        torque:torque,
+        maximumAuthorisedMassInKg:mam,
+        numberOfSeats:nb_seats,
+        location:location,
+        rentalPriceDTO:createRentalPriceDTO(price,"dollar","minute"),
+        rentalCompanyName:companyName
     }
 }
 const createAccountDTO = (username, password, phoneNumber, email, accountType) =>{

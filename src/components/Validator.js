@@ -24,12 +24,15 @@ export default function validateCompanyData(name,email,phoneNumber){
     return validateEmailAndPhoneNumber(email,phoneNumber);
 }
 
-export function validateAccountData(username, password, phoneNumber, email, firstName,lastName){
+export function validateAccountData(username, password, phoneNumber, email, firstName,lastName,isNewAccount){
     if(username === ""){
         return STRINGS.EMPTY_USERNAME_ERROR
     }
 
-    if(password !== "" && password.match(STRINGS.REGEX_PHONENUMBER)===null){
+    if(isNewAccount && password === ""){
+        return STRINGS.EMPTY_PASSWORD_ERROR;
+    }
+    if(password !== "" && password.match(STRINGS.REGEX_PASSWORD)!==null){
         return STRINGS.INVALID_PASSWORD
     }
 
@@ -37,12 +40,79 @@ export function validateAccountData(username, password, phoneNumber, email, firs
         return  STRINGS.EMPTY_NAME_ERROR
     }
     else{
-     if(firstName.match(STRINGS.REGEX_PHONENUMBER)===null ||
-         lastName.match(STRINGS.REGEX_PHONENUMBER)===null){
+     if(firstName.match(STRINGS.REGEX_PERSON_NAME)===null ||
+         lastName.match(STRINGS.REGEX_PERSON_NAME)===null){
          return STRINGS.INVALID_PERSON_NAME
      }
     }
     return validateEmailAndPhoneNumber(email,phoneNumber)
+}
+export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price){
+    if(VIN === ""){
+        return "VIN"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(VIN.match(STRINGS.REGEX_VIN)!==null){
+            return "VIN"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(range === ""){
+        return "Range"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(range.match(STRINGS.INT_REGEX)===null){
+            return "Range"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(year === ""){
+        return "Year"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(year.match(STRINGS.INT_REGEX)===null){
+            return "Year"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(hp === ""){
+        return "Horse power"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(hp.match(STRINGS.INT_REGEX)===null){
+            return "Horse power"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(torque === ""){
+        return "Torque"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(torque.match(STRINGS.INT_REGEX)===null){
+            return "Torque"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(mam === ""){
+        return "Maximum authorized mass"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(mam.match(STRINGS.INT_REGEX)===null){
+            return "Maximum authorized mass"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(nb_seats === ""){
+        return "Number of seats"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(nb_seats.match(STRINGS.INT_REGEX)===null){
+            return "Number of seats"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+    if(price === ""){
+        return "Price "+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(!isNaN(parseFloat(price))){
+            return "Price field should have a decimal value"
+        }
+    }
+
 
 
 }

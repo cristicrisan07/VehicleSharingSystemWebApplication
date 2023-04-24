@@ -1,14 +1,16 @@
 import "./style/LoginPage.css";
 import {doLogin} from "../services/UserService"
-import {redirect, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export const AdminLoginPage = () => {
     const navigate = useNavigate()
     const onLogin = (e) =>{
-        doLogin(e, document.getElementById("usernameInput").value, document.getElementById("passwordInput").value, "admin")
-            .then(_  =>{
+        doLogin(e, document.getElementById("usernameInput").value, document.getElementById("passwordInput").value, "administrator")
+            .then(_ =>{
                 navigate("/admin")
-            })
+            }).catch(error => {
+            console.error('There was an error!: ', error);
+        })
 
     }
     return (
