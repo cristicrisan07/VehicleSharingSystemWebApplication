@@ -47,20 +47,32 @@ export function validateAccountData(username, password, phoneNumber, email, firs
     }
     return validateEmailAndPhoneNumber(email,phoneNumber)
 }
-export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price){
+export function validateVehicleData(VIN,registrationNumber,range,year,hp,torque,mam,nb_seats,price){
     if(VIN === ""){
         return "VIN"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(VIN.match(STRINGS.REGEX_VIN)!==null){
-            return "VIN"+STRINGS.NUMERIC_FIELD_ERROR;
+        if(VIN.match(STRINGS.REGEX_VIN)===null){
+            return "VIN "+STRINGS.ALPHANUMERIC_FIELD_ERROR;
+        }else{
+            if(VIN.length !== 17){
+                return "VIN code should consist of 17 characters.";
+            }
+        }
+    }
+    if(registrationNumber === ""){
+        return "Registration Number"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(registrationNumber.match(STRINGS.REGEX_VIN)===null){
+            return "Registration Number "+STRINGS.ALPHANUMERIC_FIELD_ERROR;
         }
     }
     if(range === ""){
         return "Range"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(range.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(range))){
             return "Range"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -68,7 +80,7 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Year"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(year.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(year))){
             return "Year"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -76,7 +88,7 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Horse power"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(hp.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(hp))){
             return "Horse power"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -84,7 +96,7 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Torque"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(torque.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(torque))){
             return "Torque"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -92,7 +104,7 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Maximum authorized mass"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(mam.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(torque))){
             return "Maximum authorized mass"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -100,7 +112,7 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Number of seats"+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(nb_seats.match(STRINGS.INT_REGEX)===null){
+        if(isNaN(parseInt(nb_seats))){
             return "Number of seats"+STRINGS.NUMERIC_FIELD_ERROR;
         }
     }
@@ -108,11 +120,11 @@ export function validateVehicleData(VIN,range,year,hp,torque,mam,nb_seats,price)
         return "Price "+STRINGS.EMPTY_FIELD_ERROR;
     }
     else{
-        if(!isNaN(parseFloat(price))){
+        if(isNaN(parseFloat(price))){
             return "Price field should have a decimal value"
         }
     }
-
+    return STRINGS.STATUS_VALID
 
 
 }

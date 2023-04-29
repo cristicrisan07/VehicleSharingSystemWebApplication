@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Button, Col, Container, Form, FormGroup, InputGroup, Modal, Row} from "react-bootstrap";
-import validateVehicleData, {validateAccountData} from "../Validator";
+import {validateVehicleData} from "../Validator";
 import {getLocalItem, LocalStorageKeys, STRINGS, UserRoles} from "../../services/Utils";
 import SingleSelect from "./SingleSelect";
 import {createVehicleDTO} from "../../services/UserService";
@@ -9,6 +9,7 @@ import "../../pages/style/Map.css"
 export function OpenAddNewVehicleFormButton(props) {
 
     const marker = useRef(null)
+    const map = useRef(null)
     const [show, setShow] = useState(false);
 
     const handleClose = () => {
@@ -16,76 +17,89 @@ export function OpenAddNewVehicleFormButton(props) {
         setShow(false);
     }
     const handleShow = () => {
-        let loader = new Loader({
-            apiKey: STRINGS.MAPS_API_KEY,
-            version: "weekly"
-        });
-        loader.load().then(async () => {
-            // eslint-disable-next-line no-undef
-            const {Map} = await google.maps.importLibrary("maps");
-
-            const map = new Map(document.getElementById("map"), {
-                center: {lat: -34.397, lng: 150.644},
-                zoom: 8,
-            })
-            map.addListener('click', function (e) {
-                placeMarker(e.latLng, map);
+            let loader = new Loader({
+                apiKey: STRINGS.MAPS_API_KEY,
+                version: "weekly"
             });
+            loader.load().then(async () => {
+                // eslint-disable-next-line no-undef
+                const {Map} = await google.maps.importLibrary("maps");
 
-        });
+                map.current = new Map(document.getElementById("map"), {
+                    center: {lat: -34.397, lng: 150.644},
+                    zoom: 8,
+                })
 
+                    map.current.addListener('click', function (e) {
+                        placeMarker(e.latLng, map.current);
+                    });
+
+
+            });
         setShow(true)
     }
 
-    const [manufacturers,setManufacturers] = useState([])
-    const [models,setModels] = useState([])
+    const [manufacturers,setManufacturers] = useState(props.manufacturers)
+    const [models,setModels] = useState(["A4"])
     const [selectedManufacturerNameFromDropdown,setSelectedManufacturerNameFromDropdown] = useState("");
     const [selectedModelNameFromDropdown,setSelectedModelNameFromDropdown] = useState("");
+    const [selectedYearOfManufacture,setSelectedYearOfManufacture] = useState("");
     const [errorMessageForLabel,seterrorMessageForLabel]=useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         if(selectedManufacturerNameFromDropdown!=="") {
             if(selectedModelNameFromDropdown !== "") {
-            let status = validateVehicleData(document.getElementById("formNewVehicleVIN").value,
-                document.getElementById("formNewVehicleRange").value,
-                document.getElementById("formNewVehicleYearOfManufacture").value,
-                document.getElementById("formNewVehicleHorsePower").value,
-                document.getElementById("formNewVehicleTorque").value,
-                document.getElementById("formNewVehicleMaximumAuthorisedMassInKg").value,
-                document.getElementById("formNewVehicleNumberOfSeats").value,
-                document.getElementById("formNewVehiclePrice").value)
+                if(marker.current!==null) {
+                    let status = validateVehicleData(document.getElementById("formNewVehicleVIN").value,
+                        document.getElementById("formNewVehicleRegistrationNumber").value,
+                        document.getElementById("formNewVehicleRange").value,
+                        selectedYearOfManufacture,
+                        document.getElementById("formNewVehicleHorsePower").value,
+                        document.getElementById("formNewVehicleTorque").value,
+                        document.getElementById("formNewVehicleMaximumAuthorisedMassInKg").value,
+                        document.getElementById("formNewVehicleNumberOfSeats").value,
+                        document.getElementById("formNewVehiclePrice").value)
 
-            if (status === STRINGS.STATUS_VALID) {
-                let vehicle = createVehicleDTO(document.getElementById("formNewVehicleVIN").value,
-                    document.getElementById("formNewVehicleRange").value,
-                    document.getElementById("formNewVehicleYearOfManufacture").value,
-                    document.getElementById("formNewVehicleHorsePower").value,
-                    document.getElementById("formNewVehicleTorque").value,
-                    document.getElementById("formNewVehicleMaximumAuthorisedMassInKg").value,
-                    document.getElementById("formNewVehicleNumberOfSeats").value,
-                    document.getElementById("formNewVehiclePrice").value)
-                await fetch(STRINGS.INSERT_MANAGER_URL, {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
-                    },
-                    body: JSON.stringify(vehicle)
-                }).then(function (res) {
-                    return res.text();
-                }).then(function (res) {
-                    if (!res.includes("ERROR")) {
-                        props.handleVehiclesFunction(vehicle)
-                        handleClose();
+                    if (status === STRINGS.STATUS_VALID) {
+                        let vehicle = createVehicleDTO(document.getElementById("formNewVehicleVIN").value,
+                            document.getElementById("formNewVehicleRegistrationNumber").value,
+                            selectedManufacturerNameFromDropdown,
+                            selectedModelNameFromDropdown,
+                            document.getElementById("formNewVehicleRange").value,
+                            selectedYearOfManufacture,
+                            document.getElementById("formNewVehicleHorsePower").value,
+                            document.getElementById("formNewVehicleTorque").value,
+                            document.getElementById("formNewVehicleMaximumAuthorisedMassInKg").value,
+                            document.getElementById("formNewVehicleNumberOfSeats").value,
+                            JSON.stringify(marker.current.getPosition()),
+                            document.getElementById("formNewVehiclePrice").value,
+                            getLocalItem(LocalStorageKeys.COMPANY_NAME),
+                            document.getElementById("formNewVehicleAvailabilityCheckBox").checked)
+                        await fetch(STRINGS.INSERT_VEHICLE_URL, {
+                            method: 'POST',
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json",
+                                "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
+                            },
+                            body: JSON.stringify(vehicle)
+                        }).then(function (res) {
+                            return res.text();
+                        }).then(function (res) {
+                            if (!res.includes("ERROR")) {
+                                props.handleVehiclesFunction(vehicle)
+                                handleClose();
+                            } else {
+                                seterrorMessageForLabel(res);
+                            }
+                        })
                     } else {
-                        seterrorMessageForLabel(res);
+                        seterrorMessageForLabel(status);
                     }
-                })
-            } else {
-                seterrorMessageForLabel(status);
-            }
+                }else{
+                    seterrorMessageForLabel(STRINGS.NO_LOCATION_SELECTED)
+                }
         }else{
                 seterrorMessageForLabel(STRINGS.NO_MODEL_CHOSEN)
              }
@@ -102,6 +116,7 @@ export function OpenAddNewVehicleFormButton(props) {
             })
         }
         else{
+            marker.current.setMap(map)
             marker.current.setPosition(position)
         }
         map.panTo(position);
@@ -125,7 +140,13 @@ export function OpenAddNewVehicleFormButton(props) {
                     <Form>
                         <Form.Group className="mb-3" controlId="formNewVehicleVIN">
                             <Col mb={2}>
-                                <Form.Control type="text" placeholder="VIN" />
+                                <Form.Control type="text" placeholder="VIN" maxLength={17} minLength={17} />
+                            </Col>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formNewVehicleRegistrationNumber">
+                            <Col mb={2}>
+                                <Form.Control type="text" placeholder="Registration number"/>
                             </Col>
                         </Form.Group>
 
@@ -157,7 +178,12 @@ export function OpenAddNewVehicleFormButton(props) {
 
                         <Form.Group className="mb-3" controlId="formNewVehicleYearOfManufacture">
                             <Col mb={2}>
-                                <Form.Control type="number" placeholder="Year of manufacture"/>
+                                <>
+                                    <FormGroup className="mb-3" controlId="formModelLabel">
+                                        <Form.Label>Year of manufacture:</Form.Label>
+                                    </FormGroup>
+                                    <SingleSelect parentFunction={setSelectedYearOfManufacture} inputStrings={Array.from(new Array(24), (x, i) => i + 2000)}/>
+                                </>
                             </Col>
                         </Form.Group>
 
@@ -194,6 +220,12 @@ export function OpenAddNewVehicleFormButton(props) {
                         <Form.Group className="mb-3" controlId="formNewVehicleRange">
                             <Col mb={2}>
                                 <Form.Control type="number" placeholder="Range (km)" />
+                            </Col>
+                        </Form.Group>
+
+                        <Form.Group className="lg-3" controlId="formNewVehicleAvailabilityCheckBox">
+                            <Col sm={2}>
+                                <Form.Check type="checkbox" label="Available" className="HomepageLabel"/>
                             </Col>
                         </Form.Group>
                         <div id="map" style={{"height":"75vh"}}></div>

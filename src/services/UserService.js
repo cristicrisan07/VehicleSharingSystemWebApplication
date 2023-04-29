@@ -2,11 +2,11 @@ import {
     LocalStorageKeys,
     getLocalItem,
     setLocalItem,
-    UserRoles, STRINGS,
+    UserRoles, STRINGS, removeLocalItem,
 } from "./Utils";
 
 export const doLogin = async(e,username, password,type) => {
-    const loginURL = type === "administrator" ? STRINGS.ADMIN_LOGIN_URL : STRINGS.MANAGER_LOGIN_URL;
+    const loginURL = type === UserRoles.ADMINISTRATOR ? STRINGS.ADMIN_LOGIN_URL : STRINGS.MANAGER_LOGIN_URL;
     let d = {
         username: username,
         password: password,
@@ -25,16 +25,27 @@ export const doLogin = async(e,username, password,type) => {
         if(res.status === 403){
             return Promise.reject("Wrong credentials");
         }
-        return res.text();
-    }).then(function(token){
-        let role = type === "administrator" ? UserRoles.ADMINISTRATOR : UserRoles.MANAGER
+
+        return type === UserRoles.ADMINISTRATOR ? res.text() : res.json();
+    }).then(function(res){
         let user = {
             username: username,
-            role: role,
-            token:token
+            role: type,
+            token: type === UserRoles.ADMINISTRATOR ? res : res.token
         };
+        if(type === UserRoles.MANAGER) {
+            setLocalItem(LocalStorageKeys.COMPANY_NAME, res.companyName)
+        }
         setLocalItem(LocalStorageKeys.USER, user)
     });
+}
+export const doLogout = (isManager,navigate) => {
+    removeLocalItem(LocalStorageKeys.USER)
+    if(isManager){
+        removeLocalItem(LocalStorageKeys.COMPANY_NAME)
+    }
+    navigate("/login")
+
 }
 function createUserDTO(username, password, phoneNumber, email, accountType, firstName,lastName) {
     return{
@@ -56,9 +67,10 @@ export function createRentalPriceDTO(value,currency,timeunit){
         timeunit:timeunit
     }
 }
-export function createVehicleDTO(VIN, manufacturer, model, range, year, hp, torque, mam, nb_seats,location, price,companyName){
+export function createVehicleDTO(VIN,registrationNumber, manufacturer, model, range, year, hp, torque, mam, nb_seats,location, price,companyName,availability){
     return{
         vin:VIN,
+        registrationNumber:registrationNumber,
         manufacturer:manufacturer,
         model:model,
         rangeLeftInKm:range,
@@ -68,8 +80,9 @@ export function createVehicleDTO(VIN, manufacturer, model, range, year, hp, torq
         maximumAuthorisedMassInKg:mam,
         numberOfSeats:nb_seats,
         location:location,
-        rentalPriceDTO:createRentalPriceDTO(price,"dollar","minute"),
-        rentalCompanyName:companyName
+        rentalPriceDTO:createRentalPriceDTO(price,"RON","minute"),
+        rentalCompanyName:companyName,
+        available:availability
     }
 }
 const createAccountDTO = (username, password, phoneNumber, email, accountType) =>{

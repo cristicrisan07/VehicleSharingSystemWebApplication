@@ -7,6 +7,9 @@ export const ProtectedPage = (props) => {
 
     const navigate = useNavigate()
     useEffect(()=>{
+        if(!isLoggedIn()){
+            navigate(props.redirectLink)
+        }
         if(!(isLoggedIn() && (props.authority === undefined || isAuthorized(props.authority)))){
             navigate(props.redirectLink)
         }
@@ -26,9 +29,8 @@ export const ProtectedPage = (props) => {
             <ErrorPage error={notLoggedInError}/>
             :
             props.authority === undefined || isAuthorized(props.authority) ?
-                // if authorized return the component
                 props.component
-                : // if not authorized return an error page
+                :
                 <ErrorPage error={notAuthorizedError}/>
     )
 }

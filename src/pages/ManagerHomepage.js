@@ -1,17 +1,25 @@
 import "./style/LoginPage.css";
 import {getLocalItem, LocalStorageKeys, STRINGS} from "../services/Utils";
-import {Tab, Tabs} from "react-bootstrap";
+import {Button, Col, Row, Tab, Tabs} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import VehiclesCRUDView from "../components/CRUD/VehiclesCRUDView";
+import {doLogout} from "../services/UserService";
+import {useNavigate} from "react-router-dom";
 export const ManagerHomepage = () => {
     const [key, setKey] = useState('key');
+    const navigate = useNavigate();
 
     return (
         <>
             <h3 className="h4 font-weight-bold text-theme">
                 Vehicle Sharing Web Application Manager Section
             </h3>
-            <h2>Hello {getLocalItem(LocalStorageKeys.USER).username}</h2>
+            <Row>
+                <Col>
+                    <h2>Hello {getLocalItem(LocalStorageKeys.USER).username}</h2>
+                    <Button onClick={()=>doLogout(true,navigate)}>Log out</Button>
+                </Col>
+            </Row>
 
             <Tabs
                 id="uncontrolled-tab"
@@ -21,7 +29,7 @@ export const ManagerHomepage = () => {
                 className="mb-3"
             >
                 <Tab eventKey="vehicles" title="Vehicles">
-                    <VehiclesCRUDView/>
+                    <VehiclesCRUDView manufacturers={["Audi"]}/>
                 </Tab>
                 <Tab eventKey="stats" title="Statistics">
                 </Tab>
