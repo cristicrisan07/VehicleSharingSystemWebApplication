@@ -2,17 +2,23 @@ export const STRINGS = {
     ADMIN_LOGIN_URL: "http://localhost:8080/vsss/administrator/authenticate",
     MANAGER_LOGIN_URL: "http://localhost:8080/vsss/manager/authenticate",
     INSERT_COMPANY_URL:"http://localhost:8080/vsss/administrator/addCompany",
+    INSERT_SUBSCRIPTION_URL:"http://localhost:8080/vsss/administrator/addSubscription",
     INSERT_MANAGER_URL:"http://localhost:8080/vsss/administrator/addManager",
     INSERT_VEHICLE_URL:"http://localhost:8080/vsss/manager/addVehicle",
     UPDATE_COMPANY_URL:"http://localhost:8080/vsss/administrator/updateCompany",
+    UPDATE_SUBSCRIPTION_URL:"http://localhost:8080/vsss/administrator/updateSubscription",
     UPDATE_MANAGER_URL:"http://localhost:8080/vsss/administrator/updateManager",
     UPDATE_VEHICLE_URL:"http://localhost:8080/vsss/manager/updateVehicle",
     DELETE_COMPANY_URL:"http://localhost:8080/vsss/administrator/deleteCompany/",
+    DELETE_SUBSCRIPTION_URL:"http://localhost:8080/vsss/administrator/deleteSubscription/",
     DELETE_MANAGER_URL:"http://localhost:8080/vsss/administrator/deleteManager/",
     DELETE_VEHICLE_URL:"http://localhost:8080/vsss/manager/deleteVehicle/",
     GET_VEHICLES_FROM_COMPANY_URL:"http://localhost:8080/vsss/manager/getVehiclesOfCompany/",
+    GET_ALL_SUBSCRIPTIONS_URL:"http://localhost:8080/vsss/administrator/getAvailableSubscriptions",
     GET_ALL_COMPANIES_URL:"http://localhost:8080/vsss/administrator/getCompanies",
     GET_ALL_MANAGERS_URL:"http://localhost:8080/vsss/administrator/getManagers",
+    GET_PENDING_VALIDATIONS_URL:"http://localhost:8080/vsss/administrator/getPendingValidations",
+    SET_STATUS_OF_DRIVER_DOCUMENT_URL:"http://localhost:8080/vsss/administrator/setStatusOfDriverDocument",
     REGEX_EMAIL:"^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
     REGEX_PERSON_NAME:"[a-zA-Z]+",
     REGEX_VIN:"^[a-zA-Z0-9]+$",
@@ -32,6 +38,7 @@ export const STRINGS = {
     NO_MANUFACTURER_CHOSEN:"You have to choose a manufacturer",
     NO_MODEL_CHOSEN:"You have to choose a model",
     NO_LOCATION_SELECTED:"Please select a location",
+    NO_TIMEUNIT_SELECTED:"Please select a time unit",
     EMPTY_FIELD_ERROR:" field cannot be empty",
     NUMERIC_FIELD_ERROR:" field should contain only numeric characters",
     ALPHANUMERIC_FIELD_ERROR:" field should contain only alphanumeric characters",
@@ -47,6 +54,13 @@ export const LocalStorageKeys = {
 export const UserRoles = {
     ADMINISTRATOR: 'administrator',
     MANAGER: 'manager'
+}
+export const TimeUnits = {
+    MINUTE: 'minute',
+    HOUR: 'hour',
+    DAY: 'day',
+    WEEK: 'week',
+    MONTH: 'month'
 }
 export function getLocalItem(key) {
     const value = localStorage.getItem(key);

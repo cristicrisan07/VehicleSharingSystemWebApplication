@@ -74,7 +74,7 @@ export default function ManagersCRUDView (props) {
                 }).then(function (res) {
                         setErrorMessageForLabel(res);
                     if(!res.includes("ERROR")){
-                        setManagers([...managers.filter(vehicle=>vehicle.registrationNumber!==selectedManager.registrationNumber),manager])
+                        setManagers([...managers.filter(manager=>manager.registrationNumber!==selectedManager.registrationNumber),manager])
                     }
                     })
             } else {

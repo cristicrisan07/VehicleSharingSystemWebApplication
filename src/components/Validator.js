@@ -126,5 +126,31 @@ export function validateVehicleData(VIN,registrationNumber,range,year,hp,torque,
     }
     return STRINGS.STATUS_VALID
 
+}
 
+export function validateSubscriptionData(name,kilometersLimit,rentalPriceValue){
+
+    if(name === ""){
+        return "Name"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+
+    if(kilometersLimit === ""){
+        return "Kilometers limit"+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(isNaN(parseInt(kilometersLimit))){
+            return "Kilometers limit"+STRINGS.NUMERIC_FIELD_ERROR;
+        }
+    }
+
+    if(rentalPriceValue === ""){
+        return "Price "+STRINGS.EMPTY_FIELD_ERROR;
+    }
+    else{
+        if(isNaN(parseFloat(rentalPriceValue))){
+            return "Price field should have a decimal value"
+        }
+    }
+
+    return STRINGS.STATUS_VALID
 }

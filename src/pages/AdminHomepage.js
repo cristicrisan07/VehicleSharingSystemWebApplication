@@ -4,8 +4,10 @@ import {Button, Col, Row, Tab, Tabs} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import CompaniesCRUDView from "../components/CRUD/CompaniesCRUDView";
 import ManagersCRUDView from "../components/CRUD/ManagersCRUDView";
+import DocumentsValidationView from "../components/Partial/DocumentsValidationView"
 import {doLogout} from "../services/UserService";
 import {useNavigate} from "react-router-dom";
+import SubscriptionsCRUDView from "../components/CRUD/SubscriptionsCRUDView";
 export const AdminHomepage = () => {
     const [key, setKey] = useState('key');
     const [companies,setCompanies]=useState([]);
@@ -73,7 +75,12 @@ export const AdminHomepage = () => {
                 <Tab eventKey="managers" title="Managers">
                     <ManagersCRUDView companies={companies}/>
                 </Tab>
-
+                <Tab eventKey="subscriptions" title="Subscriptions">
+                    <SubscriptionsCRUDView/>
+                </Tab>
+                <Tab eventKey="pending_documents" title="Pending validations">
+                    <DocumentsValidationView/>
+                </Tab>
             </Tabs>
          </>
     );

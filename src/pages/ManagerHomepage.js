@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import VehiclesCRUDView from "../components/CRUD/VehiclesCRUDView";
 import {doLogout} from "../services/UserService";
 import {useNavigate} from "react-router-dom";
+import SubscriptionsCRUDView from "../components/CRUD/SubscriptionsCRUDView";
 export const ManagerHomepage = () => {
     const [key, setKey] = useState('key');
     const navigate = useNavigate();
@@ -30,8 +31,6 @@ export const ManagerHomepage = () => {
             >
                 <Tab eventKey="vehicles" title="Vehicles">
                     <VehiclesCRUDView manufacturers={["Audi"]}/>
-                </Tab>
-                <Tab eventKey="stats" title="Statistics">
                 </Tab>
 
             </Tabs>

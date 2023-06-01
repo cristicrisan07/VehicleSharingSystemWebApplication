@@ -2,7 +2,7 @@ import {
     LocalStorageKeys,
     getLocalItem,
     setLocalItem,
-    UserRoles, STRINGS, removeLocalItem,
+    UserRoles, STRINGS, removeLocalItem, TimeUnits,
 } from "./Utils";
 
 export const doLogin = async(e,username, password,type) => {
@@ -64,7 +64,7 @@ export function createRentalPriceDTO(value,currency,timeunit){
     return{
         value:value,
         currency:currency,
-        timeunit:timeunit
+        timeUnit:timeunit
     }
 }
 export function createVehicleDTO(VIN,registrationNumber, manufacturer, model, range, year, hp, torque, mam, nb_seats,location, price,companyName,availability){
@@ -80,7 +80,7 @@ export function createVehicleDTO(VIN,registrationNumber, manufacturer, model, ra
         maximumAuthorisedMassInKg:mam,
         numberOfSeats:nb_seats,
         location:location,
-        rentalPriceDTO:createRentalPriceDTO(price,"RON","minute"),
+        rentalPriceDTO:createRentalPriceDTO(price,"RON",TimeUnits.MINUTE),
         rentalCompanyName:companyName,
         available:availability
     }
@@ -92,5 +92,21 @@ const createAccountDTO = (username, password, phoneNumber, email, accountType) =
         phoneNumber:phoneNumber,
         emailAddress:email,
         accountType:accountType
+    }
+}
+
+export function createSubscriptionDTO(id,name,kilometersLimit,rentalPriceValue,timeUnit){
+    return {
+        id:id,
+        name:name,
+        kilometersLimit:kilometersLimit,
+        rentalPriceDTO:createRentalPriceDTO(rentalPriceValue,"RON",timeUnit)
+    }
+}
+
+export function createDocumentStatusDTO(username,status){
+    return {
+        driverUsername:username,
+        validationStatus:status
     }
 }

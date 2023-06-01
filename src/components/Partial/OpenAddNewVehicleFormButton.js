@@ -179,7 +179,7 @@ export function OpenAddNewVehicleFormButton(props) {
                         <Form.Group className="mb-3" controlId="formNewVehicleYearOfManufacture">
                             <Col mb={2}>
                                 <>
-                                    <FormGroup className="mb-3" controlId="formModelLabel">
+                                    <FormGroup className="mb-3" controlId="formNewVehicleYearOfManufactureLabel">
                                         <Form.Label>Year of manufacture:</Form.Label>
                                     </FormGroup>
                                     <SingleSelect parentFunction={setSelectedYearOfManufacture} inputStrings={Array.from(new Array(24), (x, i) => i + 2000)}/>
