@@ -18,6 +18,7 @@ export const STRINGS = {
     GET_ALL_COMPANIES_URL:"http://localhost:8080/vsss/administrator/getCompanies",
     GET_ALL_MANAGERS_URL:"http://localhost:8080/vsss/administrator/getManagers",
     GET_PENDING_VALIDATIONS_URL:"http://localhost:8080/vsss/administrator/getPendingValidations",
+    GET_LOCATION_OF_VEHICLE_URL:"http://localhost:8080/vsss/manager/getVehicleLocation/",
     SET_STATUS_OF_DRIVER_DOCUMENT_URL:"http://localhost:8080/vsss/administrator/setStatusOfDriverDocument",
     REGEX_EMAIL:"^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
     REGEX_PERSON_NAME:"[a-zA-Z]+",

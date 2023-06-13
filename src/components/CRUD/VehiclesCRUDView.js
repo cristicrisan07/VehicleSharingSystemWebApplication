@@ -8,11 +8,16 @@ import {createRentalCompanyVehicleDTO, createRentalPriceDTO, createVehicleDTO} f
 import {Loader} from "@googlemaps/js-api-loader";
 
 export default function VehiclesCRUDView (props) {
-
+    const [count, setCount] = useState(0);
+    const countRef = useRef(count);
+    countRef.current = count;
     const marker = useRef(null)
     const map = useRef(null)
     const [vehicles,setVehicles] = useState([])
     const [selectedRegistrationNumberFromDropdown,setSelectedRegistrationNumberFromDropdown] = useState("")
+    const selRegNbRef = useRef(selectedRegistrationNumberFromDropdown)
+    selRegNbRef.current = selectedRegistrationNumberFromDropdown
+
     const [selectedVehicle,setSelectedVehicle]=useState(
         {
             vin:"",
@@ -65,6 +70,8 @@ export default function VehiclesCRUDView (props) {
         setNewAvailability(vehicle.available)
         document.getElementById("formAvailabilityCheckBox").setAttribute("checked",vehicle.available);
         setErrorMessageForLabel("");
+        getLocationUpdates(vehicle.vin);
+
     }
 
 
@@ -75,7 +82,7 @@ export default function VehiclesCRUDView (props) {
             newTorque !== selectedVehicle.torque ||
             newMaximumAuthorisedMassInKg !== selectedVehicle.maximumAuthorisedMassInKg ||
             newNumberOfSeats !== selectedVehicle.numberOfSeats ||
-            marker.current.position !== {lat: selectedVehicle.location.lat, lng: selectedVehicle.location.lng} ||
+            //marker.current.position !== {lat: selectedVehicle.location.lat, lng: selectedVehicle.location.lng} ||
             newRentalPrice !== selectedVehicle.rentalPriceDTO.value ||
             newAvailability !== selectedVehicle.isAvailable
     }
@@ -221,9 +228,9 @@ export default function VehiclesCRUDView (props) {
                         center: position,
                         zoom: 8,
                     })
-                    map.current.addListener('click', function (e) {
-                        placeMarker(e.latLng, map.current);
-                    });
+                    // map.current.addListener('click', function (e) {
+                    //     placeMarker(e.latLng, map.current);
+                    // });
                     placeMarker(position, map.current);
 
                 });
@@ -234,11 +241,86 @@ export default function VehiclesCRUDView (props) {
         }
     },[selectedVehicle])
 
+    const getLocationUpdates = (vin) =>{
+        let url = STRINGS.GET_LOCATION_OF_VEHICLE_URL+vin
+        console.log(url)
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
+            },
+        })
+            // .then(async response => {
+            //     const data = await response.json();
+            //     if (!response.ok) {
+            //         return Promise.reject("Some weird error.");
+            //     } else {
+            //         const position = JSON.parse(data)
+            //         let loader = new Loader({
+            //             apiKey: STRINGS.MAPS_API_KEY,
+            //             version: "weekly"
+            //         });
+            //         loader.load().then(async () => {
+            //             // eslint-disable-next-line no-undef
+            //             const {Map} = await google.maps.importLibrary("maps");
+            //             map.current = new Map(document.getElementById("mapCRUD"), {
+            //                 center: position,
+            //                 zoom: 8,
+            //             })
+            //             placeMarker(position, map.current);
+            //             countRef.current = countRef.current +1;
+            //         });
+            //     }
+            //
+            // })
+            // .catch(error => {
+            //     console.error('There was an error!', error);
+            // })
+
+            .then(function (res) {
+                return res.text();
+            }).then(function (res) {
+                console.log(res)
+            const position = JSON.parse(res)
+                    let loader = new Loader({
+                        apiKey: STRINGS.MAPS_API_KEY,
+                        version: "weekly"
+                    });
+                    loader.load().then(async () => {
+                        // eslint-disable-next-line no-undef
+                        const {Map} = await google.maps.importLibrary("maps");
+                        map.current = new Map(document.getElementById("mapCRUD"), {
+                            center: position,
+                            zoom: 8,
+                        })
+                        placeMarker(position, map.current);
+                        setCount(count+1)
+                    });
+            }
+        )
+            .catch(error => {
+                console.error('There was an error!', error);
+            })
+    }
+
     useEffect(()=>{
+        selRegNbRef.current = selectedRegistrationNumberFromDropdown
         if(selectedRegistrationNumberFromDropdown!=="") {
             initializeForm();
         }
     },[selectedRegistrationNumberFromDropdown])
+
+    useEffect(()=>{
+        if(selRegNbRef.current!=="") {
+            setTimeout(() => {
+                getLocationUpdates(newVin)
+            }, 30000)
+        }
+    },[count])
+
+
     return (
         <Container>
             <Row>
