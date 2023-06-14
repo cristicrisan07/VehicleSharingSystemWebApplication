@@ -90,9 +90,8 @@ export default function VehiclesCRUDView (props) {
             newTorque !== selectedVehicle.torque ||
             newMaximumAuthorisedMassInKg !== selectedVehicle.maximumAuthorisedMassInKg ||
             newNumberOfSeats !== selectedVehicle.numberOfSeats ||
-            //marker.current.position !== {lat: selectedVehicle.location.lat, lng: selectedVehicle.location.lng} ||
             newRentalPrice !== selectedVehicle.rentalPriceDTO.value ||
-            newAvailability !== selectedVehicle.isAvailable
+            newAvailability !== selectedVehicle.available
     }
 
     const handleSubmit = async (e) => {
