@@ -4,7 +4,12 @@ import {Button, Col, Container, Form, FormGroup, Modal, Row} from "react-bootstr
 import {validateVehicleData} from "../Validator";
 import {getLocalItem, LocalStorageKeys, STRINGS, UserRoles} from "../../services/Utils";
 import {OpenAddNewVehicleFormButton} from "../Partial/OpenAddNewVehicleFormButton";
-import {createRentalCompanyVehicleDTO, createRentalPriceDTO, createVehicleDTO} from "../../services/UserService";
+import {
+    createEmergencyActionDTO,
+    createRentalCompanyVehicleDTO,
+    createRentalPriceDTO,
+    createVehicleDTO
+} from "../../services/UserService";
 import {Loader} from "@googlemaps/js-api-loader";
 
 export default function VehiclesCRUDView (props) {
@@ -17,7 +22,7 @@ export default function VehiclesCRUDView (props) {
     const [selectedRegistrationNumberFromDropdown,setSelectedRegistrationNumberFromDropdown] = useState("")
     const selRegNbRef = useRef(selectedRegistrationNumberFromDropdown)
     selRegNbRef.current = selectedRegistrationNumberFromDropdown
-
+    const [timer,setTimer] = useState(null)
     const [selectedVehicle,setSelectedVehicle]=useState(
         {
             vin:"",
@@ -51,6 +56,7 @@ export default function VehiclesCRUDView (props) {
     const [newSelectedYearOfManufacture,setNewSelectedYearOfManufacture] = useState("");
     const [newAvailability,setNewAvailability] = useState(false);
     const [errorMessageForLabel,setErrorMessageForLabel]=useState("");
+    const [emergencyActionMessageLabel,setEmergencyActionMessageLabel] = useState("");
 
     const initializeForm = () => {
         let vehicle = vehicles.find(vehicle => vehicle.registrationNumber===selectedRegistrationNumberFromDropdown);
@@ -70,7 +76,9 @@ export default function VehiclesCRUDView (props) {
         setNewAvailability(vehicle.available)
         document.getElementById("formAvailabilityCheckBox").setAttribute("checked",vehicle.available);
         setErrorMessageForLabel("");
+        setEmergencyActionMessageLabel("");
         getLocationUpdates(vehicle.vin);
+        getEmergencyActionStatus(vehicle.vin);
 
     }
 
@@ -129,6 +137,9 @@ export default function VehiclesCRUDView (props) {
                         setErrorMessageForLabel(res);
                         if(!res.includes("ERROR")){
                             setVehicles([...vehicles.filter(vehicle=>vehicle.registrationNumber!==selectedVehicle.registrationNumber),vehicle])
+                            if(res.includes("ISSUE MARKED AS SOLVED")){
+                                setEmergencyActionMessageLabel("ISSUE MARKED AS SOLVED")
+                            }
                         }
                     })
                 } else {
@@ -243,7 +254,6 @@ export default function VehiclesCRUDView (props) {
 
     const getLocationUpdates = (vin) =>{
         let url = STRINGS.GET_LOCATION_OF_VEHICLE_URL+vin
-        console.log(url)
         fetch(url, {
             method: 'GET',
             headers: {
@@ -252,60 +262,37 @@ export default function VehiclesCRUDView (props) {
                 "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
             },
         })
-            // .then(async response => {
-            //     const data = await response.json();
-            //     if (!response.ok) {
-            //         return Promise.reject("Some weird error.");
-            //     } else {
-            //         const position = JSON.parse(data)
-            //         let loader = new Loader({
-            //             apiKey: STRINGS.MAPS_API_KEY,
-            //             version: "weekly"
-            //         });
-            //         loader.load().then(async () => {
-            //             // eslint-disable-next-line no-undef
-            //             const {Map} = await google.maps.importLibrary("maps");
-            //             map.current = new Map(document.getElementById("mapCRUD"), {
-            //                 center: position,
-            //                 zoom: 8,
-            //             })
-            //             placeMarker(position, map.current);
-            //             countRef.current = countRef.current +1;
-            //         });
-            //     }
-            //
-            // })
-            // .catch(error => {
-            //     console.error('There was an error!', error);
-            // })
-
             .then(function (res) {
                 return res.text();
             }).then(function (res) {
-                console.log(res)
             const position = JSON.parse(res)
                     let loader = new Loader({
                         apiKey: STRINGS.MAPS_API_KEY,
                         version: "weekly"
                     });
                     loader.load().then(async () => {
-                        // eslint-disable-next-line no-undef
-                        const {Map} = await google.maps.importLibrary("maps");
-                        map.current = new Map(document.getElementById("mapCRUD"), {
-                            center: position,
-                            zoom: 8,
-                        })
+                        if(map.current === null) {
+                            // eslint-disable-next-line no-undef
+                            const {Map} = await google.maps.importLibrary("maps");
+                            map.current = new Map(document.getElementById("mapCRUD"), {
+                                center: position,
+                                zoom: 8,
+                            })
+                        }
                         placeMarker(position, map.current);
                         setCount(count+1)
+
                     });
-            }
-        )
+            })
             .catch(error => {
                 console.error('There was an error!', error);
             })
     }
 
     useEffect(()=>{
+        if(timer !== null){
+            clearTimeout(timer)
+        }
         selRegNbRef.current = selectedRegistrationNumberFromDropdown
         if(selectedRegistrationNumberFromDropdown!=="") {
             initializeForm();
@@ -314,11 +301,62 @@ export default function VehiclesCRUDView (props) {
 
     useEffect(()=>{
         if(selRegNbRef.current!=="") {
-            setTimeout(() => {
+            setTimer(setTimeout(() => {
                 getLocationUpdates(newVin)
-            }, 30000)
+            }, 30000))
         }
     },[count])
+
+    const handleEmergencyIntervention = async (e) =>{
+        e.preventDefault()
+        let actionDTO = createEmergencyActionDTO(
+            getLocalItem(LocalStorageKeys.USER).username,
+            newVin,
+            "LIMP_MODE")
+        await fetch(STRINGS.SEND_EMERGENCY_ACTION_URL, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
+            },
+            body: JSON.stringify(actionDTO)
+        }).then(function (res) {
+            return res.text();
+        }).then(function (res) {
+            setErrorMessageForLabel(res);
+            if(res === "SUCCESS"){
+                let updatedAvailabilityStatusVehicle = selectedVehicle;
+                updatedAvailabilityStatusVehicle.isAvailable = false;
+                setVehicles([...vehicles.filter(vehicle=>vehicle.registrationNumber!==selectedVehicle.registrationNumber),updatedAvailabilityStatusVehicle])
+                setNewAvailability(false)
+                setEmergencyActionMessageLabel("Emergency action: "+actionDTO.action +" performed." +
+                    " To mark the issue as solved, recheck the availability checkbox and update.")
+            }
+        })
+    }
+
+    const getEmergencyActionStatus = (vin) =>{
+        fetch(STRINGS.GET_EMERGENCY_ACTION_VEHICLE_STATUS_URL+vin,{
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization":"Bearer " + getLocalItem(LocalStorageKeys.USER).token
+            }
+        })
+            .then(function (res) {
+                return res.text();
+            }).then(function (res) {
+                if(res!=="NONE"){
+                    setEmergencyActionMessageLabel("Emergency action: "+ res +" performed." +
+                        " To mark the issue as solved, recheck the availability checkbox and update.")
+                }
+            })
+            .catch(error => {
+                console.error('There was an error!', error);
+            })
+    }
 
 
     return (
@@ -432,9 +470,20 @@ export default function VehiclesCRUDView (props) {
                         </Form.Group>
 
                         <Form.Group className="lg-3" controlId="formAvailabilityCheckBox">
-                            <Col sm={1}>
+                            <Row>
+                                <Col sm={1}>
                                 <Form.Check type="checkbox" label="Available" checked={newAvailability} onChange={()=>setNewAvailability(!newAvailability)} className="HomepageLabel"/>
                             </Col>
+                                <Col>
+                                    {
+                                        emergencyActionMessageLabel!=="" &&
+                                        <>
+                                            <Form.Label>{emergencyActionMessageLabel}</Form.Label>
+                                        </>
+                                    }
+                                </Col>
+                            </Row>
+
                         </Form.Group>
 
                         <div id="mapCRUD" style={{"height":"75vh"}}></div>
@@ -453,6 +502,11 @@ export default function VehiclesCRUDView (props) {
                             <Button onClick={handleDelete}>
                                 DELETE
                             </Button>
+                        {emergencyActionMessageLabel === "" &&
+                            <Button onClick={handleEmergencyIntervention}>
+                                SET VEHICLE IN LIMP MODE
+                            </Button>
+                        }
                     </Form>
             }
 

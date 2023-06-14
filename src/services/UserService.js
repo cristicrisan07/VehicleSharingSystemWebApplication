@@ -110,3 +110,11 @@ export function createDocumentStatusDTO(username,status){
         validationStatus:status
     }
 }
+
+export function createEmergencyActionDTO(username, vin ,action){
+    return {
+        username:username,
+        vin:vin,
+        action:action
+    }
+}
