@@ -40,3 +40,17 @@ body{
     background-color: #5fd35f !important;
     border-style: none !important;
 }
+.btn-theme-admin {
+    display:flex !important;
+    justify-content:center;
+    align-items:center;
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+    background-color: #5fd35f !important;
+    border-style: none !important;
+}
+
+.btn-theme-logout {
+    background-color: #5fd35f !important;
+    border-style: none !important;
+}

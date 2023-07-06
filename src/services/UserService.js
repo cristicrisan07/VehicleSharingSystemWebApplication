@@ -118,3 +118,20 @@ export function createEmergencyActionDTO(username, vin ,action){
         action:action
     }
 }
+export async function setVehicleInLimpMode(actionDTO,token) {
+    return fetch(STRINGS.SEND_EMERGENCY_ACTION_URL, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(actionDTO)
+    }).then(function (res) {
+        return res.text();
+    }).then(function (res) {
+        return res
+    }).catch(error => {
+        console.error('There was an error!', error);
+    })
+}

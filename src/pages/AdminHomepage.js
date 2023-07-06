@@ -58,7 +58,7 @@ export const AdminHomepage = () => {
             <Row>
                 <Col>
                     <h2>Hello {getLocalItem(LocalStorageKeys.USER).username}</h2>
-                    <Button onClick={()=>doLogout(false,navigate)}>Log out</Button>
+                    <Button className="btn btn-primary btn-theme-logout" onClick={()=>doLogout(false,navigate)}>Log out</Button>
                 </Col>
             </Row>
 

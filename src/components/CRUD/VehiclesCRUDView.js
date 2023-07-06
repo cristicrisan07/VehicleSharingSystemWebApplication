@@ -8,7 +8,7 @@ import {
     createEmergencyActionDTO,
     createRentalCompanyVehicleDTO,
     createRentalPriceDTO,
-    createVehicleDTO
+    createVehicleDTO, getVehiclesFromServer, setVehicleInLimpMode
 } from "../../services/UserService";
 import {Loader} from "@googlemaps/js-api-loader";
 
@@ -207,7 +207,7 @@ export default function VehiclesCRUDView (props) {
                             return Promise.reject("Some weird error.");
                         }
                     } else {
-                        setVehicles(data);
+                        setVehicles(data)
                     }
 
                 })
@@ -226,7 +226,6 @@ export default function VehiclesCRUDView (props) {
     useEffect(()=>{
         if(selectedVehicle.registrationNumber!==""){
             const position = JSON.parse(selectedVehicle.location)
-           // if(map.current === null) {
                 let loader = new Loader({
                     apiKey: STRINGS.MAPS_API_KEY,
                     version: "weekly"
@@ -238,16 +237,8 @@ export default function VehiclesCRUDView (props) {
                         center: position,
                         zoom: 8,
                     })
-                    // map.current.addListener('click', function (e) {
-                    //     placeMarker(e.latLng, map.current);
-                    // });
                     placeMarker(position, map.current);
-
                 });
-           // }
-           //  else{
-           //      placeMarker(position, map.current);
-           //  }
         }
     },[selectedVehicle])
 
@@ -306,23 +297,9 @@ export default function VehiclesCRUDView (props) {
         }
     },[count])
 
-    const handleEmergencyIntervention = async (e) =>{
-        e.preventDefault()
-        let actionDTO = createEmergencyActionDTO(
-            getLocalItem(LocalStorageKeys.USER).username,
-            newVin,
-            "LIMP_MODE")
-        await fetch(STRINGS.SEND_EMERGENCY_ACTION_URL, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": "Bearer " + getLocalItem(LocalStorageKeys.USER).token
-            },
-            body: JSON.stringify(actionDTO)
-        }).then(function (res) {
-            return res.text();
-        }).then(function (res) {
+    const send_emergency_action = async (actionDTO,token) =>{
+        setVehicleInLimpMode(actionDTO,token)
+            .then(function (res){
             setErrorMessageForLabel(res);
             if(res === "SUCCESS"){
                 let updatedAvailabilityStatusVehicle = selectedVehicle;
@@ -332,7 +309,19 @@ export default function VehiclesCRUDView (props) {
                 setEmergencyActionMessageLabel("Emergency action: "+actionDTO.action +" performed." +
                     " To mark the issue as solved, recheck the availability checkbox and update.")
             }
-        })
+            }
+
+        )
+
+    }
+
+    const handleEmergencyIntervention = async (e) =>{
+        e.preventDefault()
+        let actionDTO = createEmergencyActionDTO(
+            getLocalItem(LocalStorageKeys.USER).username,
+            newVin,
+            "LIMP_MODE")
+        await send_emergency_action(actionDTO,getLocalItem(LocalStorageKeys.USER).token)
     }
 
     const getEmergencyActionStatus = (vin) =>{
